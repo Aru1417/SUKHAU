@@ -1,6 +1,7 @@
 const catchAsync = require("../shared/catchAsync");
 const sendResponse = require("../shared/sendResponse");
 const AppointmentService  = require("./AppoinmentService");
+const doc = require("../model/Doctor");
 
 const createAppointment = catchAsync(async (req, res) => {
     const result = await AppointmentService.createAppointment(req.user, req.body);
@@ -44,6 +45,7 @@ const deleteAppointment = catchAsync(async (req, res) => {
 
 const updateAppointment = catchAsync(async (req, res) => {
     const result = await AppointmentService.updateAppointment(req.params.id, req.body);
+    console.log("resultof ",result);
     sendResponse(res, {
         statusCode: 200,
         message: 'Successfully Updated Appointment !!',
@@ -53,8 +55,9 @@ const updateAppointment = catchAsync(async (req, res) => {
 });
 
 const getPatientAppointmentById = catchAsync(async (req, res) => {
-    console.log(req.user);
+    // console.log(req.user);
     const result = await AppointmentService.getPatientAppointmentById(req.user);
+    // console.log(result);
     sendResponse(res, {
         statusCode: 200,
         message: 'Successfully Updated Appointment !!',
@@ -74,7 +77,9 @@ const getDoctorAppointmentsById = catchAsync(async (req, res) => {
 });
 
 const updateAppointmentByDoctor = catchAsync(async (req, res) => {
+    console.log(req.body);
     const result = await AppointmentService.updateAppointmentByDoctor(req.user, req.body);
+    console.log(result);
     sendResponse(res, {
         statusCode: 200,
         message: 'Successfully updated apppointments !!',

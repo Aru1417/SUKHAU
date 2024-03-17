@@ -9,17 +9,19 @@ const Doctor=require("../model/Doctor");
 const Patient=require("../model/Patient");
 const Payment=require("../model/Payment")
 async function createAppointment(user, payload) {
-    const { patientInfo, payment } = payload;
+    console.log(payload);
+    const { patientInfo, Payment} = payload;
     const isUserExist = await Patient.findById(user.userId);
     if (!isUserExist) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Patient Account is not found !!');
     }
-
+console.log(`{patientInfo}`);
+console.log(patientInfo);
     const isDoctorExist = await Doctor.findById(patientInfo.doctorId);
     if (!isDoctorExist) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Doctor Account is not found !!');
     }
-
+    console.log(` is patient exist${isDoctorExist}`);
     if (isUserExist) {
         patientInfo.patientId = isUserExist.id;
         patientInfo.status = 'pending';
@@ -28,20 +30,20 @@ async function createAppointment(user, payload) {
     const appointment = new Appointments(patientInfo);
     const savedAppointment = await appointment.save();
 
-    const { paymentMethod, paymentType } = payment;
-    const docFee = Number(isDoctorExist.price);
-    const vat = (15 / 100) * (docFee + 10);
-    const paymentData = {
-        appointmentId: savedAppointment.id,
-        bookingFee: 10,
-        paymentMethod: paymentMethod,
-        paymentType: paymentType,
-        vat: vat,
-        DoctorFee: docFee,
-        totalAmount: (vat + docFee)
-    };
-    const paymentRecord = new Payment(paymentData);
-    await paymentRecord.save();
+    // const { paymentMethod, paymentType } = payment;
+    // const docFee = Number(isDoctorExist.price);
+    // const vat = (15 / 100) * (docFee + 10);
+    // const paymentData = {
+    //     appointmentId: savedAppointment.id,
+    //     bookingFee: 10,
+    //     paymentMethod: paymentMethod,
+    //     paymentType: paymentType,
+    //     vat: vat,
+    //     DoctorFee: docFee,
+    //     totalAmount: (vat + docFee)
+    // };
+    // const paymentRecord = new Payment(paymentData);
+    // await paymentRecord.save();
 
     return savedAppointment;
 }
@@ -60,11 +62,16 @@ async function getAppointment(id) {
 // GetPatientAppointmentById function
 async function getPatientAppointmentById(user) {
     const { userId } = user;
+    // console.log(userId);
     const isPatient = await Patient.findById(userId);
+    // console.log(isPatient);
     if (!isPatient) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Patient Account is not found !!');
     }
-    return await Appointments.find({ patientId: userId }).populate('doctor');
+    const result= await Appointments.find({ patientId: userId }).populate('doctorId');
+    // console.log(result); 
+    return result;
+
 }
 
 // GetPaymentInfoViaAppintmentId function
@@ -99,7 +106,8 @@ async function deleteAppointment(id) {
 
 // UpdateAppointment function
 async function updateAppointment(id, payload) {
-    return await Appointments.findByIdAndUpdate(id, payload, { new: true });
+    console.log("payload",payload)
+    return await Appointments.findByIdAndUpdate(id, payload.data, { new: true });
 }
 
 // GetDoctorAppointmentsById function
@@ -120,8 +128,8 @@ async function getDoctorAppointmentsById(user, filter) {
         const upcomingDate = moment().startOf('day').add(1, 'days').toDate();
         andCondition.scheduleDate = { $gte: upcomingDate };
     }
-
-    const result = await Appointments.find(andCondition).populate('patient');
+console.log();
+    const result = await Appointments.find(andCondition).populate('patientId');
     return result;
 }
 
@@ -142,7 +150,9 @@ async function getDoctorPatients(user) {
 // UpdateAppointmentByDoctor function
 async function updateAppointmentByDoctor(user, payload) {
     const { userId } = user;
+    console.log(userId);
     const isDoctor = await Doctor.findById(userId);
+    console.log(isDoctor);
     if (!isDoctor) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Doctor Account is not found !!');
     }
